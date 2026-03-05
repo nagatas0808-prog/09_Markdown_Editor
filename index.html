@@ -4,407 +4,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>マークダウンエディター PRO | リアルタイムプレビュー付き無料エディタ</title>
-    <meta name="description" content="Markdownをリアルタイムプレビュー。見出し・リスト・リンク・コード・テーブルを即座に確認。ブロガー・エンジニア向け無料Markdownエディタ。">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>簡易マークダウン - 便利ツール集</title>
+    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap"
-        rel="stylesheet">
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] } } } }
-    </script>
     <style>
         body {
-            background-color: #020617;
-            color: #f8fafc;
-            background-image: radial-gradient(at 0% 0%, hsla(190, 40%, 10%, 1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(210, 39%, 15%, 0.2) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(170, 49%, 15%, 0.2) 0, transparent 50%);
-            background-attachment: fixed;
+            background-color: #d4d0c8;
+            /* Windows 98/2000 灰色 */
+            color: #000000;
+            font-family: "MS PGothic", "MS Pゴシック", sans-serif;
+            margin: 10px;
         }
 
-        .glass {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .window {
+            background-color: #d4d0c8;
+            border: 2px outset #ffffff;
+            padding: 2px;
+            box-shadow: 1px 1px 0px #000;
         }
 
-        .gradient-text {
-            background: linear-gradient(to right, #67e8f9, #a78bfa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .title-bar {
+            background-color: #000080;
+            color: #ffffff;
+            padding: 3px 5px;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Markdownプレビューのスタイル */
-        .md-preview h1 {
-            font-size: 2em;
-            font-weight: 700;
-            margin: 0.8em 0 0.4em;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-            padding-bottom: 0.3em;
-            color: #f1f5f9;
+        .title-bar-text {
+            display: flex;
+            align-items: center;
         }
 
-        .md-preview h2 {
-            font-size: 1.5em;
-            font-weight: 700;
-            margin: 0.8em 0 0.4em;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-            padding-bottom: 0.3em;
-            color: #f1f5f9;
+        .content {
+            padding: 10px;
         }
 
-        .md-preview h3 {
-            font-size: 1.25em;
-            font-weight: 600;
-            margin: 0.6em 0 0.3em;
-            color: #f1f5f9;
-        }
-
-        .md-preview h4 {
-            font-size: 1.1em;
-            font-weight: 600;
-            margin: 0.5em 0 0.3em;
-            color: #e2e8f0;
-        }
-
-        .md-preview p {
-            margin: 0.5em 0;
-            line-height: 1.8;
-            color: #cbd5e1;
-        }
-
-        .md-preview ul,
-        .md-preview ol {
-            margin: 0.5em 0;
-            padding-left: 1.5em;
-            color: #cbd5e1;
-        }
-
-        .md-preview li {
-            margin: 0.25em 0;
-            line-height: 1.7;
-        }
-
-        .md-preview ul {
-            list-style-type: disc;
-        }
-
-        .md-preview ol {
-            list-style-type: decimal;
-        }
-
-        .md-preview code {
-            background: rgba(30, 41, 59, 0.8);
-            padding: 0.15em 0.4em;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #67e8f9;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .md-preview pre {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 8px;
-            padding: 1em;
-            overflow-x: auto;
-            margin: 0.8em 0;
-        }
-
-        .md-preview pre code {
-            background: none;
-            padding: 0;
-            color: #e2e8f0;
-        }
-
-        .md-preview blockquote {
-            border-left: 4px solid #6366f1;
-            padding: 0.5em 1em;
-            margin: 0.8em 0;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 0 6px 6px 0;
-            color: #a5b4fc;
-        }
-
-        .md-preview a {
-            color: #67e8f9;
-            text-decoration: underline;
-        }
-
-        .md-preview hr {
-            border: none;
-            border-top: 1px solid rgba(148, 163, 184, 0.2);
-            margin: 1.5em 0;
-        }
-
-        .md-preview table {
-            border-collapse: collapse;
+        table.editor-table {
             width: 100%;
-            margin: 0.8em 0;
+            border-collapse: separate;
+            border-spacing: 5px;
         }
 
-        .md-preview th,
-        .md-preview td {
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            padding: 0.5em 0.75em;
-            text-align: left;
+        table.editor-table td {
+            width: 50%;
+            vertical-align: top;
         }
 
-        .md-preview th {
-            background: rgba(30, 41, 59, 0.6);
-            font-weight: 600;
-            color: #f1f5f9;
+        textarea {
+            width: 100%;
+            height: 400px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 2px inset #ffffff;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+            padding: 5px;
+            box-sizing: border-box;
         }
 
-        .md-preview td {
-            color: #cbd5e1;
+        .preview-area {
+            width: 100%;
+            height: 400px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 2px inset #ffffff;
+            overflow-y: auto;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
         }
 
-        .md-preview img {
-            max-width: 100%;
-            border-radius: 8px;
+        /* プレビュー内のレトロHTML装飾 */
+        .preview-area h1 {
+            border-bottom: 2px solid #000;
+            font-size: 1.5em;
         }
 
-        .md-preview strong {
-            color: #f1f5f9;
-            font-weight: 600;
+        .preview-area h2 {
+            border-bottom: 1px solid #000;
+            font-size: 1.3em;
         }
 
-        .md-preview em {
-            color: #e2e8f0;
+        .preview-area code {
+            background: #eee;
+            padding: 2px;
+            border: 1px solid #ccc;
         }
 
-        .toolbar-btn {
-            transition: all 0.15s ease;
+        .preview-area blockquote {
+            border-left: 5px solid #ccc;
+            margin-left: 0;
+            padding-left: 10px;
+            color: #666;
         }
 
-        .toolbar-btn:hover {
-            background: rgba(99, 102, 241, 0.3);
+        .toolbar {
+            margin-bottom: 5px;
         }
 
-        textarea:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4);
+        .toolbar button {
+            background-color: #d4d0c8;
+            border: 2px outset #ffffff;
+            margin-right: 2px;
+            padding: 2px 6px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .toolbar button:active {
+            border: 2px inset #ffffff;
+        }
+
+        .footer {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 12px;
+            border-top: 1px solid #808080;
+            padding-top: 5px;
+        }
+
+        a {
+            color: #0000ff;
         }
     </style>
-    <meta name="google-site-verification" content="nDfNlMk2wvPV-koGT7Ur1MandTe503qb1CQ0kJw6fdA" />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5383957100145583"
-        crossorigin="anonymous"></script>
 </head>
 
-<body class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight"><span
-                    class="gradient-text">Markdown</span> PRO</h1>
-            <p class="text-slate-400 text-lg max-w-2xl mx-auto">左に書く、右にプレビュー。リアルタイムMarkdownエディター。</p>
+<body>
+    <div class="window">
+        <div class="title-bar">
+            <div class="title-bar-text">
+                📝 簡易マークダウンエディタ - [新しき文書]
+            </div>
+            <div style={{fontSize: '10px' }}>×</div>
         </div>
-        <div class="mb-10 text-center flex justify-center w-full min-h-[90px]"><!-- ■■■ 広告タグ貼り付け位置（トップ） ■■■ --></div>
-        <div id="root"></div>
-
-        <!-- SEO -->
-        <div class="mt-16 pt-12 border-t border-slate-800/80">
-            <section class="mb-12">
-                <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white flex items-center"><span
-                        class="w-1.5 h-8 bg-cyan-500 rounded-full mr-4 inline-block"></span>Markdown PRO とは？</h2>
-                <div class="space-y-4 text-slate-300 leading-relaxed text-base">
-                    <p>「Markdown
-                        PRO」は、<strong>Markdown記法で書いた文章をリアルタイムでHTMLプレビューする無料のオンラインエディター</strong>です。見出し・リスト・リンク・画像・コードブロック・テーブルなど、主要なMarkdown記法をすべてサポートしています。
-                    </p>
-                    <p>ブログ記事の下書き、READMEファイルの作成、ドキュメント作成など、Markdownを使うすべてのシーンで活躍します。ツールバーからワンクリックで書式を挿入できるため、Markdown初心者でもすぐに使いこなせます。
-                    </p>
-                </div>
-            </section>
-            <section class="mb-12">
-                <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white flex items-center"><span
-                        class="w-1.5 h-8 bg-violet-500 rounded-full mr-4 inline-block"></span>主要なMarkdown記法</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50"><code
-                            class="text-cyan-400"># 見出し1</code><span class="text-slate-400 text-sm ml-3">→ 大見出し</span>
-                    </div>
-                    <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50"><code
-                            class="text-cyan-400">**太字**</code><span class="text-slate-400 text-sm ml-3">→
-                            <strong>太字</strong></span></div>
-                    <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50"><code
-                            class="text-cyan-400">- リスト項目</code><span class="text-slate-400 text-sm ml-3">→ 箇条書き</span>
-                    </div>
-                    <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50"><code
-                            class="text-cyan-400">[リンク](URL)</code><span class="text-slate-400 text-sm ml-3">→
-                            ハイパーリンク</span></div>
-                    <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50"><code
-                            class="text-cyan-400">`コード`</code><span class="text-slate-400 text-sm ml-3">→
-                            インラインコード</span></div>
-                    <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50"><code
-                            class="text-cyan-400">> 引用</code><span class="text-slate-400 text-sm ml-3">→ 引用ブロック</span>
-                    </div>
-                </div>
-            </section>
+        <div class="content">
+            <div id="root"></div>
         </div>
-        <div class="mt-12 text-center flex justify-center w-full min-h-[250px]"><!-- ■■■ 広告タグ貼り付け位置（ボトム） ■■■ --></div>
+        <div class="footer">
+            [ <a href="../00_Portal/index.html">便利ツール集ポータルへ戻る</a> ]
+        </div>
     </div>
 
     <script type="text/babel">
-        const SAMPLE = `# Markdown PRO へようこそ！ 🚀
+        const SAMPLE = `# 簡易マークダウンへようこそ！
+左側のテキストエリアにMarkdownを記入すると、右側にリアルタイムでプレビューが表示されます。
 
-これは**リアルタイムプレビュー**付きのMarkdownエディターです。
+## 機能
+- **太字** や *斜体*
+- [リンクの作成](http://landisk-f9d50c/)
+- リスト形式
+  1. 番号付き
+  2. 箇条書き
 
-## 基本的な書式
+> 引用も使えます。
 
-テキストを **太字** にしたり、*斜体* にしたり、~~取り消し線~~ を引けます。
-
-## リスト
-
-- 箇条書きリスト
-- 2つ目の項目
-  - ネストも可能
-
-1. 番号付きリスト
-2. 2番目
-3. 3番目
-
-## コードブロック
-
-インライン: \`console.log("Hello")\`
-
-\`\`\`javascript
-function greet(name) {
-  return \`Hello, \${name}!\`;
-}
-\`\`\`
-
-## テーブル
-
-| 機能 | 対応状況 |
-|------|---------|
-| 見出し | ✅ |
-| リスト | ✅ |
-| コード | ✅ |
-| テーブル | ✅ |
-
-## 引用
-
-> 良いコードは、それ自体がドキュメントである。
-> — Steve McConnell
-
-## リンク
-
-[Google](https://google.com) をクリックしてみましょう。
-
----
-
-*さあ、左側をどんどん編集してみてください！*`;
+\`コード\` も書けますよ。
+`;
 
         const App = () => {
             const [markdown, setMarkdown] = React.useState(SAMPLE);
-            const [viewMode, setViewMode] = React.useState('split');
-            const textareaRef = React.useRef(null);
 
             const getHTML = () => {
-                try { return { __html: marked.parse(markdown) }; }
-                catch (e) { return { __html: '<p>パースエラー</p>' }; }
+                try {
+                    return { __html: marked.parse(markdown) };
+                } catch (e) {
+                    return { __html: 'Error: Cannot parse markdown.' };
+                }
             };
 
-            const insertAtCursor = (before, after = '') => {
-                const ta = textareaRef.current;
-                if (!ta) return;
-                const start = ta.selectionStart;
-                const end = ta.selectionEnd;
-                const selected = markdown.substring(start, end);
-                const newText = markdown.substring(0, start) + before + selected + after + markdown.substring(end);
-                setMarkdown(newText);
-                setTimeout(() => {
-                    ta.focus();
-                    ta.selectionStart = start + before.length;
-                    ta.selectionEnd = start + before.length + selected.length;
-                }, 0);
-            };
-
-            const toolbar = [
-                { label: 'H1', action: () => insertAtCursor('# ') },
-                { label: 'H2', action: () => insertAtCursor('## ') },
-                { label: 'H3', action: () => insertAtCursor('### ') },
-                { label: 'B', action: () => insertAtCursor('**', '**'), bold: true },
-                { label: 'I', action: () => insertAtCursor('*', '*'), italic: true },
-                { label: '~', action: () => insertAtCursor('~~', '~~') },
-                { label: '•', action: () => insertAtCursor('- ') },
-                { label: '1.', action: () => insertAtCursor('1. ') },
-                { label: '> ', action: () => insertAtCursor('> ') },
-                { label: '</>', action: () => insertAtCursor('`', '`') },
-                { label: '```', action: () => insertAtCursor('```\n', '\n```') },
-                { label: '🔗', action: () => insertAtCursor('[', '](url)') },
-                { label: '📊', action: () => insertAtCursor('| 列1 | 列2 |\n|------|------|\n| A | B |\n') },
-                { label: '---', action: () => insertAtCursor('\n---\n') },
-            ];
-
-            const copyMd = () => { navigator.clipboard.writeText(markdown); alert('Markdownをコピーしました！'); };
-            const copyHtml = () => { navigator.clipboard.writeText(marked.parse(markdown)); alert('HTMLをコピーしました！'); };
-
-            const charCount = markdown.length;
-            const lineCount = markdown.split('\n').length;
+            const insertText = (text) => {
+                setMarkdown(prev => prev + "\n" + text);
+            }
 
             return (
-                <div className="space-y-4">
-                    {/* ツールバー */}
-                    <div className="glass rounded-xl px-3 py-2 shadow-xl flex flex-wrap items-center gap-1">
-                        {toolbar.map((t, i) => (
-                            <button key={i} onClick={t.action}
-                                className={`toolbar-btn px-2.5 py-1.5 rounded text-sm text-slate-300 hover:text-white ${t.bold ? 'font-bold' : ''} ${t.italic ? 'italic' : ''}`}>
-                                {t.label}
-                            </button>
-                        ))}
-                        <div className="flex-grow"></div>
-                        <div className="flex gap-1">
-                            {['split', 'edit', 'preview'].map(m => (
-                                <button key={m} onClick={() => setViewMode(m)}
-                                    className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${viewMode === m ? 'bg-indigo-500/30 text-white' : 'text-slate-500 hover:text-white'}`}>
-                                    {m === 'split' ? '分割' : m === 'edit' ? '編集' : 'プレビュー'}
-                                </button>
-                            ))}
-                        </div>
+                <div>
+                    <div class="toolbar">
+                        <button onClick={() => insertText('# ')}>H1</button>
+                        <button onClick={() => insertText('## ')}>H2</button>
+                        <button onClick={() => insertText('**太字**')}>B</button>
+                        <button onClick={() => insertText('*斜体*')}>I</button>
+                        <button onClick={() => insertText('- ')}>List</button>
+                        <button onClick={() => insertText('> ')}>Quote</button>
+                        <button onClick={() => setMarkdown('')}>新規(クリア)</button>
                     </div>
-
-                    {/* エディター本体 */}
-                    <div className={`grid gap-4 ${viewMode === 'split' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`} style={{ minHeight: '500px' }}>
-                        {viewMode !== 'preview' && (
-                            <div className="glass rounded-2xl shadow-xl flex flex-col overflow-hidden">
-                                <div className="flex items-center justify-between px-4 py-2 border-b border-slate-700/50">
-                                    <span className="text-xs text-slate-400 flex items-center"><span className="mr-1">✏️</span> Markdown</span>
-                                    <span className="text-xs text-slate-500">{charCount}文字 / {lineCount}行</span>
-                                </div>
-                                <textarea ref={textareaRef} value={markdown} onChange={(e) => setMarkdown(e.target.value)}
-                                    className="flex-grow bg-transparent px-4 py-3 text-sm text-slate-200 font-mono resize-none leading-relaxed"
-                                    spellCheck="false" placeholder="Markdownを入力..." />
-                            </div>
-                        )}
-                        {viewMode !== 'edit' && (
-                            <div className="glass rounded-2xl shadow-xl flex flex-col overflow-hidden">
-                                <div className="flex items-center justify-between px-4 py-2 border-b border-slate-700/50">
-                                    <span className="text-xs text-slate-400 flex items-center"><span className="mr-1">👁️</span> プレビュー</span>
-                                    <div className="flex gap-2">
-                                        <button onClick={copyMd} className="text-xs text-slate-500 hover:text-white transition-colors">📋 MD</button>
-                                        <button onClick={copyHtml} className="text-xs text-slate-500 hover:text-white transition-colors">📋 HTML</button>
-                                    </div>
-                                </div>
-                                <div className="md-preview flex-grow px-5 py-4 overflow-y-auto" style={{ maxHeight: '600px' }}
-                                    dangerouslySetInnerHTML={getHTML()} />
-                            </div>
-                        )}
-                    </div>
+                    <table class="editor-table">
+                        <tr>
+                            <td>
+                                <div style={{ fontSize: '11px', marginBottom: '2px' }}>テキスト入力：</div>
+                                <textarea value={markdown} onChange={(e) => setMarkdown(e.target.value)} spellCheck="false" />
+                            </td>
+                            <td>
+                                <div style={{ fontSize: '11px', marginBottom: '2px' }}>HTMLプレビュー：</div>
+                                <div class="preview-area" dangerouslySetInnerHTML={getHTML()} />
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             );
         };
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-
-<!-- admax -->
-<script src="https://adm.shinobi.jp/s/5dfe8bfce49a43ffe78096b109972b5b"></script>
-<!-- admax -->
 </body>
 
 </html>
